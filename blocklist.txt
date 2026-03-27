@@ -1,0 +1,4 @@
+# One domain per line. Lines starting with # are ignored.
+facebook.com
+instagram.com
+ads.google.com
