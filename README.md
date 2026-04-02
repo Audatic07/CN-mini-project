@@ -1,39 +1,59 @@
 # Enhanced Custom DNS Server
 
-## Project Structure
+Minimal run guide for normal mode (`udp_server.py` on port `53`).
 
-- server.py: main controller and request handling flow
-- forwarder.py: upstream DNS forwarding (round-robin + validation)
-- cache.py: thread-safe DNS cache and TTL extraction
-- blocklist.py: blocklist normalization and loading
-- blocklist.txt: blocked domains list (one per line)
-- local_hosts.json: local static DNS records
-- dns_logs.txt: query logs
-- requirements.txt: Python dependencies
+## What Is In The Code
+
+- `udp_server.py`: main UDP DNS server, request handling pipeline, and logging.
+- `forwarder.py`: upstream DNS forwarding with round-robin selection and timeout handling.
+- `cache.py`: in-memory DNS cache with TTL-based expiry helpers.
+- `blocklist.py`: loads and normalizes blocked domains from file.
+- `blocklist.txt`: one blocked domain per line.
+- `local_hosts.json`: static local overrides in `{"domain": "ip"}` format.
 
 ## Request Flow
 
-1. Receive DNS query over UDP.
-2. Check blocklist and return 0.0.0.0 for blocked domains.
-3. Check cache for a valid response.
-4. Check local hosts mapping.
-5. Forward unresolved query to upstream DNS.
-6. Cache response with TTL.
-7. Log result and latency.
+1. Parse incoming DNS packet.
+2. If domain is blocked, return `0.0.0.0`.
+3. Else check cache and return cached response if valid.
+4. Else check local hosts mapping and return static IP if found.
+5. Else forward to upstream DNS servers.
+6. Cache reply using TTL and write a log entry.
 
-## Setup
+## Install
 
-1. Install dependencies:
-   pip install -r requirements.txt
-2. Optional environment variables:
-   - DNS_HOST (default: 0.0.0.0)
-   - DNS_PORT (default: 53)
-   - DNS_WORKERS (default: 20)
-3. Run server:
-   python server.py
+```powershell
+pip install dnslib
+```
 
-## Notes
+## Run
 
-- Port 53 may require administrator privileges.
-- Add domains in blocklist.txt (one domain per line).
-- Add local mappings in local_hosts.json using {"domain": "ip"} format.
+Open PowerShell as Administrator, then:
+
+```powershell
+cd C:/OpenSource/CN-mini-project
+python udp_server.py
+```
+
+If port `53` is busy:
+
+```powershell
+Get-NetUDPEndpoint -LocalPort 53 | Select-Object LocalAddress, LocalPort, OwningProcess
+Get-Process -Id <PID>
+```
+
+## Query
+
+Run from another terminal:
+
+```powershell
+nslookup facebook.com 127.0.0.1
+nslookup intranet.local 127.0.0.1
+nslookup example.com 127.0.0.1
+```
+
+Expected:
+
+- `facebook.com` -> `0.0.0.0`
+- `intranet.local` -> `192.168.1.10`
+- `example.com` -> public IPs
