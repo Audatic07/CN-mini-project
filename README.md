@@ -1,6 +1,6 @@
-# Enhanced Custom DNS Server
+# Custom DNS Server
 
-Minimal run guide for normal mode (`udp_server.py` on port `53`).
+Run guide (`udp_server.py` on port `53`).
 
 ## What Is In The Code
 
@@ -33,13 +33,6 @@ Open PowerShell as Administrator, then:
 ```powershell
 cd C:/OpenSource/CN-mini-project
 python udp_server.py
-```
-
-If port `53` is busy:
-
-```powershell
-Get-NetUDPEndpoint -LocalPort 53 | Select-Object LocalAddress, LocalPort, OwningProcess
-Get-Process -Id <PID>
 ```
 
 ## Query
